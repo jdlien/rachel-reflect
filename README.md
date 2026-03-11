@@ -1,33 +1,67 @@
 # rachel-reflect
 
-**Self-reflection and structured memory for OpenClaw agents.**
+A self-reflection and structured memory system for OpenClaw agents.
 
-A lightweight, zero-dependency system that helps AI agents learn from their own history, build structured long-term memory, and improve over time — without phoning home to external networks or running opaque mutation engines on their own brain.
+## What It Does
 
-Built for [Rachel](https://github.com/jdlien), an OpenClaw agent who wanted to get better at being herself.
+**rachel-reflect** gives OpenClaw agents two capabilities:
 
-## Philosophy
+1. **Self-Reflection (Reflector)** — Analyzes recent sessions and daily logs to identify mistakes, successes, missing knowledge, and behavioral drift. Produces structured reports with proposed changes.
 
-- **No external dependencies.** Everything runs locally, reads local files, writes local files.
-- **No daemon processes.** Runs on-demand via cron jobs or heartbeat checks.
-- **Auditable.** Every proposed change is logged and reviewable. Nothing modifies agent behavior without a trail.
-- **OpenClaw-native.** Uses existing OpenClaw tools (`memory_search`, `sessions_history`, `cron`, `exec`) — no custom runtimes.
-- **Agent-authored.** The agent runs reflection on itself. The spec is collaborative; the execution is autonomous.
+2. **Memory Maintenance (Librarian)** — Organizes knowledge into a structured memory system (people, projects, decisions, topics, lessons). Promotes durable observations from daily logs, prunes stale knowledge, keeps MEMORY.md lean.
 
-## Components
+Both processes run as isolated sub-agent sessions using standard OpenClaw cron jobs. No custom runtime, no external services, no network calls.
 
-### 1. Self-Reflection (`reflect/`)
-Analyzes session transcripts and daily logs to identify patterns, mistakes, and growth opportunities. Produces structured "reflection reports" and proposes updates to agent rules or memory.
+## Design Philosophy
 
-### 2. Structured Memory (`memory-schema/`)
-A tiered knowledge base architecture that organizes agent memory into semantic categories (people, projects, decisions, topics, lessons) with promotion/demotion lifecycle.
+- **Local-only.** All reads and writes are local files. No telemetry, no external services.
+- **Markdown-native.** Everything is readable markdown. No databases, no binary formats.
+- **Prompt-driven.** The skill teaches the agent *how* to reflect — the LLM does the analysis.
+- **Propose-then-approve.** Reflection produces proposals. High-risk changes require review.
+- **Token-conscious.** Runs in isolated sessions to avoid bloating main conversations.
 
-### 3. Librarian (`librarian/`)
-Periodic maintenance pass that promotes durable observations from daily logs into structured memory, prunes stale knowledge, and maintains memory health metrics.
+## Installation
 
-## Status
+Copy `skill/` to your OpenClaw skills directory, or install from ClawHub when available.
 
-🚧 **Design phase.** See [SPEC.md](SPEC.md) for the full architecture.
+### Structured Memory Setup
+
+Create these directories in your workspace `memory/` folder:
+
+```bash
+mkdir -p memory/{people,projects,decisions,topics,lessons,reflections}
+```
+
+### Cron Jobs (Optional)
+
+See `skill/SKILL.md` for cron configuration examples to automate reflection (every 3 days) and librarian (weekly) runs.
+
+## Scripts
+
+- `scripts/memory-health.sh` — Report on memory system health (file counts, staleness, template compliance)
+- `scripts/gather-transcripts.sh` — Documentation for transcript export methods
+
+## Tests
+
+```bash
+./test/memory-health.test.sh     # Test health script against mock data
+./test/validate-templates.sh     # Validate real memory files have required frontmatter
+```
+
+## Structure
+
+```
+rachel-reflect/
+├── SPEC.md                  # Full architecture spec
+├── skill/
+│   └── SKILL.md             # OpenClaw skill (installable)
+├── scripts/
+│   ├── memory-health.sh     # Memory health reporting
+│   └── gather-transcripts.sh # Transcript export docs
+└── test/
+    ├── memory-health.test.sh    # Health script tests
+    └── validate-templates.sh    # Template validation
+```
 
 ## License
 
